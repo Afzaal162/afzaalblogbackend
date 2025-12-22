@@ -1,6 +1,9 @@
+import dotenv from "dotenv";
+dotenv.config();
+
+console.log("FRONTEND_URL:", process.env.FRONTEND_URL);
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import mongoose from "mongoose";
 import blogRouter from "./routes/blogRouter.js";
 import adminRouter from "./routes/adminRoutes.js";
@@ -9,7 +12,6 @@ import path from "path";
 dotenv.config();
 
 const app = express();
-console.log("FRONTEND_URL:", process.env.FRONTEND_URL);
 // ✅ CORS configuration
 const allowedOrigins = [
   process.env.FRONTEND_URL, // deployed frontend
