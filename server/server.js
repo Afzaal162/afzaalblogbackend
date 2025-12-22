@@ -9,7 +9,7 @@ import path from "path";
 dotenv.config();
 
 const app = express();
-
+console.log("FRONTEND_URL:", process.env.FRONTEND_URL);
 // ✅ CORS configuration
 const allowedOrigins = [
   process.env.FRONTEND_URL, // deployed frontend
