@@ -13,7 +13,7 @@ const app = express();
 // ✅ Allow frontend + local development
 app.use(cors({
   origin: [
-    "https://afzaal-blogging-website-u49r.vercel.app",
+        process.env.FRONTEND_URL,
     "http://localhost:5175"
   ],
   credentials: true,
