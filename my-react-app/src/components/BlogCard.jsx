@@ -2,13 +2,18 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 const BlogCard = ({ blog }) => {
+  // Handle image URL safely
+  const imageUrl = blog.image.startsWith("http")
+    ? blog.image
+    : `${import.meta.env.VITE_API_URL}${blog.image}`;
+
   return (
     <div className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden">
       <img
-        src={`${import.meta.env.VITE_API_URL}${blog.image}`} // ✅ backend URL
+        src={imageUrl} // ✅ backend URL
         alt={blog.title}
         className="w-full h-48 object-cover"
-        onError={(e) => (e.target.src = "/no-image.png")}
+        onError={(e) => (e.target.src = "/no-image.png")} // fallback
       />
 
       <div className="p-4">
