@@ -10,26 +10,23 @@ dotenv.config();
 
 const app = express();
 
-// ✅ Allow both local + production frontend
+// ✅ Allow frontend + local development
 app.use(cors({
   origin: [
-    process.env.FRONTEND_URL,
-    "http://localhost:5175"
+    process.env.FRONTEND_URL, // environment variable
+    "http://localhost:5175"    // for local frontend
   ],
   credentials: true,
 }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Serve images
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
-// Routes
 app.use("/api/blog", blogRouter);
 app.use("/api/admin", adminRouter);
 
-// MongoDB
+// MongoDB connection
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected successfully"))
   .catch(err => console.error("MongoDB connection error:", err));
