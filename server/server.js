@@ -65,3 +65,6 @@ mongoose.connect(process.env.MONGO_URI)
 // ✅ Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+console.log("FRONTEND_URL:", process.env.FRONTEND_URL);
+console.log("MONGO_URI:", process.env.MONGO_URI ? "exists" : "missing");
+
