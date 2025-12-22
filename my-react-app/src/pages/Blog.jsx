@@ -12,9 +12,15 @@ const Blog = () => {
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/blog/${id}`);
       const data = await res.json();
-      if (data.success) setBlog(data.blog);
+      if (data.success) {
+        setBlog(data.blog);
+      } else {
+        console.error("Blog not found:", data.message);
+        setBlog(null);
+      }
     } catch (err) {
       console.error(err);
+      setBlog(null);
     } finally {
       setLoading(false);
     }
@@ -27,6 +33,10 @@ const Blog = () => {
   if (loading) return <p className="text-center mt-20">Loading blog...</p>;
   if (!blog) return <p className="text-center mt-20">Blog not found ❌</p>;
 
+  const imageUrl = blog.image.startsWith("http")
+    ? blog.image
+    : `${import.meta.env.VITE_API_URL}${blog.image}`;
+
   return (
     <div className="w-full min-h-screen bg-gray-50">
       <Navbar />
@@ -35,7 +45,7 @@ const Blog = () => {
         <h1 className="text-4xl font-bold mb-2">{blog.title}</h1>
         <p className="text-gray-500 mb-4">{blog.subTitle}</p>
         <img
-          src={`${import.meta.env.VITE_API_URL}${blog.image}`}
+          src={imageUrl}
           alt={blog.title}
           className="w-full rounded-xl shadow mb-8"
           onError={(e) => (e.target.src = "/no-image.png")}
