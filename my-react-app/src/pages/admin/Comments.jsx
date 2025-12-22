@@ -3,7 +3,7 @@ import { useAppContext } from "../../context/AppContent";
 import { toast } from "react-toastify";
 
 const Comments = () => {
-  const { axios } = useAppContext();
+  const { axios } = useAppContext(); // Axios instance with baseURL = VITE_API_URL
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -11,15 +11,17 @@ const Comments = () => {
   const fetchComments = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("/api/blog/admin/comments"); // get all comments
+      const res = await axios.get("/api/blog/admin/comments"); // admin route
       if (res.data.success) {
         setComments(res.data.comments);
       } else {
-        toast.error(res.data.message);
+        setComments([]);
+        toast.error(res.data.message || "Failed to fetch comments");
       }
     } catch (error) {
       console.error("Failed to fetch comments:", error);
       toast.error("Failed to fetch comments");
+      setComments([]);
     } finally {
       setLoading(false);
     }
@@ -29,10 +31,11 @@ const Comments = () => {
     fetchComments();
   }, []);
 
-  if (loading) return <p className="text-center mt-20">Loading comments...</p>;
+  if (loading)
+    return <p className="text-center mt-20">Loading comments...</p>;
 
   return (
-    <div className="flex-1 pt-5 px-5 sm:pt-12 sm:pl-16 bg-blue-50/50">
+    <div className="flex-1 pt-5 px-5 sm:pt-12 sm:pl-16 bg-blue-50/50 min-h-screen">
       <h1 className="text-xl font-semibold mb-4">All Comments</h1>
       <div className="max-w-3xl bg-white shadow rounded-lg overflow-x-auto">
         <table className="w-full text-sm text-gray-500">
@@ -54,11 +57,20 @@ const Comments = () => {
                   {comment.content}
                 </td>
                 <td className="px-6 py-4 max-sm:hidden">
-                  {new Date(comment.createdAt).toLocaleDateString()}
+                  {comment.createdAt
+                    ? new Date(comment.createdAt).toLocaleDateString()
+                    : "N/A"}
                 </td>
-                <td className="px-6 py-4">{comment.name}</td>
+                <td className="px-6 py-4">{comment.name || "Anonymous"}</td>
               </tr>
             ))}
+            {comments.length === 0 && (
+              <tr>
+                <td colSpan={3} className="text-center py-4">
+                  No comments found.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
