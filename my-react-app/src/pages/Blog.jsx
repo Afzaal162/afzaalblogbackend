@@ -19,7 +19,7 @@ const Blog = () => {
   // Fetch blog details
   const fetchBlogData = async () => {
     try {
-      const res = await axios.get(`/api/blog/${id}`);
+      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/blog/${id}`);
       if (res.data.success) setBlog(res.data.blog);
     } catch (error) {
       toast.error(error.message);
@@ -31,7 +31,7 @@ const Blog = () => {
   // Fetch approved comments
   const fetchComments = async () => {
     try {
-      const res = await axios.get(`/api/blog/comments/${id}`); // ✅ Correct URL and GET
+      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/blog/comments/${id}`);
       if (res.data.success) setComments(res.data.comments);
     } catch (error) {
       console.error(error);
@@ -50,18 +50,17 @@ const Blog = () => {
     if (!name || !content) return toast.error("Please fill all fields");
 
     try {
-      const res = await axios.post("/api/blog/add-comment", {
+      const res = await axios.post(`${import.meta.env.VITE_BASE_URL}/api/blog/add-comment`, {
         blog: id,
         name,
         content,
       });
-     if (res.data.success) {
-  toast.success("Comment added");
-  setName("");
-  setContent("");
-  fetchComments(); // show new comment instantly
-}
-
+      if (res.data.success) {
+        toast.success("Comment added");
+        setName("");
+        setContent("");
+        fetchComments();
+      }
     } catch (error) {
       toast.error(error.message);
     }
@@ -78,7 +77,7 @@ const Blog = () => {
         <h1 className="text-4xl font-bold mb-2">{blog.title}</h1>
         <p className="text-gray-500 mb-4">{blog.subTitle}</p>
         <img
-          src={`http://localhost:3000${blog.image}`}
+          src={`${import.meta.env.VITE_BASE_URL}${blog.image}`}
           alt={blog.title}
           className="w-full rounded-xl shadow mb-8"
           onError={(e) => (e.target.src = "/no-image.png")}
