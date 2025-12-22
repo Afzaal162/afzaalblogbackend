@@ -3,9 +3,10 @@ import { useAppContext } from "../context/AppContent";
 import { toast } from "react-toastify";
 
 const BlogList = () => {
-  const { axios } = useAppContext();
+  const { axios } = useAppContext(); // Axios instance with baseURL = VITE_API_URL
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState(false); // For button disable
 
   // Fetch all blogs for admin
   const fetchBlogs = async () => {
@@ -14,6 +15,9 @@ const BlogList = () => {
       const res = await axios.get("/api/blog/all"); // admin route
       if (res.data.success) {
         setBlogs(res.data.blogs);
+      } else {
+        setBlogs([]);
+        toast.error(res.data.message || "Failed to fetch blogs");
       }
     } catch (error) {
       toast.error("Failed to fetch blogs");
@@ -27,27 +31,31 @@ const BlogList = () => {
     fetchBlogs();
   }, []);
 
-  // Delete a blog (using DELETE request)
+  // Delete a blog
   const deleteBlog = async (id) => {
     if (!window.confirm("Are you sure you want to delete this blog?")) return;
 
     try {
+      setProcessing(true);
       const res = await axios.delete("/api/blog/delete", { data: { id } });
       if (res.data.success) {
         toast.success("Blog deleted successfully");
-        setBlogs(blogs.filter((blog) => blog._id !== id)); // remove from state
+        setBlogs(blogs.filter((blog) => blog._id !== id));
       } else {
         toast.error(res.data.message || "Failed to delete blog");
       }
     } catch (error) {
       toast.error("Failed to delete blog");
       console.error(error);
+    } finally {
+      setProcessing(false);
     }
   };
 
   // Toggle publish/unpublish
   const togglePublish = async (id) => {
     try {
+      setProcessing(true);
       const res = await axios.post("/api/blog/toggle-publish", { id });
       if (res.data.success) {
         toast.success("Blog status updated");
@@ -56,10 +64,14 @@ const BlogList = () => {
             blog._id === id ? { ...blog, isPublished: !blog.isPublished } : blog
           )
         );
+      } else {
+        toast.error(res.data.message || "Failed to update status");
       }
     } catch (error) {
       toast.error("Failed to update status");
       console.error(error);
+    } finally {
+      setProcessing(false);
     }
   };
 
@@ -81,13 +93,15 @@ const BlogList = () => {
             <div className="flex gap-2 mt-4">
               <button
                 onClick={() => togglePublish(blog._id)}
-                className="bg-blue-500 text-white px-3 py-1 rounded text-sm"
+                disabled={processing}
+                className="bg-blue-500 text-white px-3 py-1 rounded text-sm disabled:opacity-50"
               >
                 {blog.isPublished ? "Unpublish" : "Publish"}
               </button>
               <button
                 onClick={() => deleteBlog(blog._id)}
-                className="bg-red-500 text-white px-3 py-1 rounded text-sm"
+                disabled={processing}
+                className="bg-red-500 text-white px-3 py-1 rounded text-sm disabled:opacity-50"
               >
                 Delete
               </button>
