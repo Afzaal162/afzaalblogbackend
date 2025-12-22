@@ -5,7 +5,7 @@ const BlogCard = ({ blog }) => {
   return (
     <div className="bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden">
       <img
-        src={`${import.meta.env.VITE_BASE_URL}${blog.image}`} // use deployed backend
+        src={`${import.meta.env.VITE_API_URL}${blog.image}`} // ✅ backend URL
         alt={blog.title}
         className="w-full h-48 object-cover"
         onError={(e) => (e.target.src = "/no-image.png")}
