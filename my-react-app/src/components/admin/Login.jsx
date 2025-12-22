@@ -18,7 +18,10 @@ const Login = () => {
 
     setLoading(true)
     try {
-      const { data } = await axios.post("/api/admin/login", { email, password })
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/api/admin/login`, // use full backend URL
+        { email, password }
+      )
 
       if (data.success) {
         localStorage.setItem("token", data.token)
