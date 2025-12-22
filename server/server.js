@@ -34,7 +34,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // ✅ Serve uploaded images
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
-
+app.get("/", (req, res) => {
+  res.send("✅ Backend is working!");
+});
 // ✅ API routes
 app.use("/api/blog", blogRouter);
 app.use("/api/admin", adminRouter);
