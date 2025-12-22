@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
 import { MdOutlineAddPhotoAlternate } from "react-icons/md";
 import Quill from "quill";
-import 'quill/dist/quill.snow.css';
+import "quill/dist/quill.snow.css";
 import { useAppContext } from "../../context/AppContent";
+import { toast } from "react-toastify";
 
 const AddBlog = () => {
-  const { axios } = useAppContext();
+  const { axios } = useAppContext(); // Axios instance with baseURL = VITE_API_URL
 
   const blogCategories = ["Startup", "Web Dev", "Android Dev", "iOS Dev", "AI & ML"];
   const editorRef = useRef(null);
@@ -24,9 +25,10 @@ const AddBlog = () => {
       setLoading(true);
       const aiContent = `<p>This is a sample AI-generated content for <strong>${title}</strong></p>`;
       quillRef.current.root.innerHTML = aiContent;
+      toast.success("AI content generated");
     } catch (err) {
       console.error(err);
-      alert("Failed to generate AI content");
+      toast.error("Failed to generate AI content");
     } finally {
       setLoading(false);
     }
@@ -37,7 +39,7 @@ const AddBlog = () => {
     e.preventDefault();
 
     if (!title || !category || !image) {
-      alert("Please fill all required fields and select an image");
+      toast.error("Please fill all required fields and select an image");
       return;
     }
 
@@ -51,11 +53,10 @@ const AddBlog = () => {
         JSON.stringify({ title, subTitle, description, category, isPublished })
       );
 
-      // ✅ Use axios with baseURL from AppContext
       const { data } = await axios.post("/api/blog/add", formData);
 
       if (data.success) {
-        alert("Blog added successfully!");
+        toast.success("Blog added successfully!");
         setTitle("");
         setSubtitle("");
         setCategory("Startup");
@@ -64,11 +65,11 @@ const AddBlog = () => {
         quillRef.current.root.innerHTML = "";
         window.location.href = "/"; // Redirect to home page
       } else {
-        alert(data.message || "Failed to add blog");
+        toast.error(data.message || "Failed to add blog");
       }
     } catch (err) {
       console.error(err);
-      alert("Something went wrong");
+      toast.error("Something went wrong while adding blog");
     }
   };
 
@@ -84,6 +85,7 @@ const AddBlog = () => {
       className="flex-1 bg-blue-50/50 text-gray-600 h-full overflow-scroll"
     >
       <div className="bg-white w-full max-w-3xl p-4 md:p-10 sm:m-10 shadow rounded">
+        {/* Thumbnail */}
         <p>Upload Thumbnail</p>
         <label
           htmlFor="image"
@@ -107,6 +109,7 @@ const AddBlog = () => {
           />
         </label>
 
+        {/* Title & Subtitle */}
         <p className="mt-4">Blog Title</p>
         <input
           type="text"
@@ -123,18 +126,21 @@ const AddBlog = () => {
           value={subTitle}
         />
 
+        {/* Blog Description */}
         <p className="mt-4">Blog Description</p>
-        <div className="max-w-lg h-74 pb-16 sm:pb-10 pt-2 relative">
+        <div className="max-w-lg h-72 pb-16 sm:pb-10 pt-2 relative">
           <div ref={editorRef}></div>
           <button
             className="absolute bottom-1 right-2 ml-2 text-xs text-white bg-black/70 px-4 py-1.5 rounded hover:underline cursor-pointer"
             type="button"
             onClick={generateContent}
+            disabled={loading}
           >
             {loading ? "Generating..." : "Generate with AI"}
           </button>
         </div>
 
+        {/* Category */}
         <p className="mt-4">Blog Category</p>
         <select
           onChange={(e) => setCategory(e.target.value)}
@@ -149,7 +155,8 @@ const AddBlog = () => {
           ))}
         </select>
 
-        <div className="flex gap-2 mt-4">
+        {/* Publish */}
+        <div className="flex gap-2 mt-4 items-center">
           <p>Publish Now</p>
           <input
             type="checkbox"
@@ -159,6 +166,7 @@ const AddBlog = () => {
           />
         </div>
 
+        {/* Submit */}
         <button
           type="submit"
           className="mt-8 w-40 h-10 bg-blue-500 text-white rounded cursor-pointer text-sm"
