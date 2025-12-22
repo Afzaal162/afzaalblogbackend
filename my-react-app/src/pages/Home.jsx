@@ -6,13 +6,14 @@ import Header from "../components/Header";
 import { useAppContext } from "../context/AppContent";
 
 const Home = () => {
-  const { axios, fetchBlog } = useAppContext();
+  const { axios } = useAppContext();
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Fetch published blogs
   const fetchBlogs = async () => {
     try {
-      const res = await axios.get("/api/blog"); // fetch published blogs from DB
+      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/blog`);
       if (res.data.success) setBlogs(res.data.blogs);
     } catch (error) {
       console.error("Error fetching blogs:", error);
@@ -29,7 +30,7 @@ const Home = () => {
     if (!window.confirm("Are you sure you want to delete this blog?")) return;
 
     try {
-      const res = await axios.delete(`/api/blog/${id}`); // delete blog
+      const res = await axios.delete(`${import.meta.env.VITE_BASE_URL}/api/blog/${id}`);
       if (res.data.success) {
         setBlogs(blogs.filter((blog) => blog._id !== id));
         alert("Blog deleted successfully");
@@ -52,8 +53,8 @@ const Home = () => {
         {blogs.map((blog) => (
           <BlogCard
             key={blog._id}
-            blog={blog}
-            onDelete={() => handleDelete(blog._id)} // pass delete handler
+            blog={{ ...blog, image: `${import.meta.env.VITE_BASE_URL}${blog.image}` }} // fix image path
+            onDelete={() => handleDelete(blog._id)}
           />
         ))}
       </div>
