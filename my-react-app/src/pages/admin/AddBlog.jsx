@@ -2,8 +2,11 @@ import React, { useEffect, useState, useRef } from "react";
 import { MdOutlineAddPhotoAlternate } from "react-icons/md";
 import Quill from "quill";
 import 'quill/dist/quill.snow.css';
+import { useAppContext } from "../../context/AppContent";
 
 const AddBlog = () => {
+  const { axios } = useAppContext();
+
   const blogCategories = ["Startup", "Web Dev", "Android Dev", "iOS Dev", "AI & ML"];
   const editorRef = useRef(null);
   const quillRef = useRef(null);
@@ -15,11 +18,10 @@ const AddBlog = () => {
   const [isPublished, setIsPublished] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Example AI content generation function
+  // Example AI content generation
   const generateContent = async () => {
     try {
       setLoading(true);
-      // Replace this with actual AI API call if needed
       const aiContent = `<p>This is a sample AI-generated content for <strong>${title}</strong></p>`;
       quillRef.current.root.innerHTML = aiContent;
     } catch (err) {
@@ -30,6 +32,7 @@ const AddBlog = () => {
     }
   };
 
+  // Submit blog
   const onSubmitHandler = async (e) => {
     e.preventDefault();
 
@@ -48,12 +51,8 @@ const AddBlog = () => {
         JSON.stringify({ title, subTitle, description, category, isPublished })
       );
 
-      const res = await fetch("http://localhost:3000/api/blog/add", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json();
+      // ✅ Use axios with baseURL from AppContext
+      const { data } = await axios.post("/api/blog/add", formData);
 
       if (data.success) {
         alert("Blog added successfully!");
@@ -99,7 +98,6 @@ const AddBlog = () => {
               className="h-full w-full object-cover rounded"
             />
           )}
-
           <input
             type="file"
             id="image"
