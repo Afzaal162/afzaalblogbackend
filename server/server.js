@@ -21,6 +21,7 @@ console.log("FRONTEND_URL:", process.env.FRONTEND_URL);
 console.log("MONGO_URI:", process.env.MONGO_URI.substring(0, 20) + "..."); // partial for security
 
 const app = express();
+console.log("FRONTEND_URL env:", process.env.FRONTEND_URL);
 
 // ✅ CORS configuration
 const allowedOrigins = [
