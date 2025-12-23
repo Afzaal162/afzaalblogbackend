@@ -25,18 +25,26 @@ console.log("FRONTEND_URL env:", process.env.FRONTEND_URL);
 
 // ✅ CORS configuration
 const allowedOrigins = [
-  process.env.FRONTEND_URL, // deployed frontend
-  "http://localhost:5175"   // local frontend
+  "https://afzaalblogfrontend.vercel.app",
+  "http://localhost:5175",
 ];
 
 app.use(cors({
-  origin: function(origin, callback){
-    if (!origin) return callback(null, true); // allow requests like Postman
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    console.error("Blocked CORS request from:", origin);
-    return callback(new Error("CORS error: origin not allowed"), false);
+  origin: (origin, callback) => {
+    console.log("Request origin:", origin);
+
+    if (!origin) return callback(null, true); // Postman / server calls
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    // ❗ DO NOT throw error
+    return callback(null, false);
   },
   credentials: true,
+}));
+
 }));
 
 // ✅ Body parsers
