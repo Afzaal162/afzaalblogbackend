@@ -3,89 +3,99 @@ import { useAppContext } from "../context/AppContent";
 import { toast } from "react-toastify";
 
 const BlogList = () => {
-  const { axios } = useAppContext(); // Axios instance with baseURL = VITE_API_URL
+  const { axios } = useAppContext(); // Axios instance
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false); // For button disable
 
   // Fetch all blogs for admin
- // Fetch all blogs for admin
-// Fetch all blogs for admin
-const fetchBlogs = async () => {
-  try {
-    setLoading(true);
-    const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/blog/all`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
+  const fetchBlogs = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/blog/all`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
 
-    if (res.data.success) {
-      setBlogs(res.data.blogs);
-    } else {
-      setBlogs([]);
-      toast.error(res.data.message || "Failed to fetch blogs");
-    }
-  } catch (error) {
-    toast.error("Failed to fetch blogs");
-    console.error(error);
-  } finally {
-    setLoading(false);
-  }
-};
-
-// Delete a blog
-const deleteBlog = async (id) => {
-  if (!window.confirm("Are you sure you want to delete this blog?")) return;
-
-  try {
-    setProcessing(true);
-    const res = await axios.delete(`${import.meta.env.VITE_API_URL}/api/blog/delete`, {
-      data: { id },
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    });
-    if (res.data.success) {
-      toast.success("Blog deleted successfully");
-      setBlogs(blogs.filter((blog) => blog._id !== id));
-    } else {
-      toast.error(res.data.message || "Failed to delete blog");
-    }
-  } catch (error) {
-    toast.error("Failed to delete blog");
-    console.error(error);
-  } finally {
-    setProcessing(false);
-  }
-};
-
-// Toggle publish/unpublish
-const togglePublish = async (id) => {
-  try {
-    setProcessing(true);
-    const res = await axios.post(
-      `${import.meta.env.VITE_API_URL}/api/blog/toggle-publish`,
-      { id },
-      {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      if (res.data.success) {
+        setBlogs(res.data.blogs);
+      } else {
+        setBlogs([]);
+        toast.error(res.data.message || "Failed to fetch blogs");
       }
-    );
-    if (res.data.success) {
-      toast.success("Blog status updated");
-      setBlogs(
-        blogs.map((blog) =>
-          blog._id === id ? { ...blog, isPublished: !blog.isPublished } : blog
-        )
-      );
-    } else {
-      toast.error(res.data.message || "Failed to update status");
+    } catch (error) {
+      toast.error("Failed to fetch blogs");
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    toast.error("Failed to update status");
-    console.error(error);
-  } finally {
-    setProcessing(false);
-  }
-};
+  };
+
+  useEffect(() => {
+    fetchBlogs();
+  }, []);
+
+  // Delete a blog
+  const deleteBlog = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this blog?")) return;
+
+    try {
+      setProcessing(true);
+      const res = await axios.delete(`${import.meta.env.VITE_API_URL}/api/blog/delete`, {
+        data: { id },
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      if (res.data.success) {
+        toast.success("Blog deleted successfully");
+        setBlogs(blogs.filter((blog) => blog._id !== id));
+      } else {
+        toast.error(res.data.message || "Failed to delete blog");
+      }
+    } catch (error) {
+      toast.error("Failed to delete blog");
+      console.error(error);
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  // Toggle publish/unpublish
+  const togglePublish = async (id) => {
+    try {
+      setProcessing(true);
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/blog/toggle-publish`,
+        { id },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (res.data.success) {
+        toast.success("Blog status updated");
+        setBlogs(
+          blogs.map((blog) =>
+            blog._id === id ? { ...blog, isPublished: !blog.isPublished } : blog
+          )
+        );
+      } else {
+        toast.error(res.data.message || "Failed to update status");
+      }
+    } catch (error) {
+      toast.error("Failed to update status");
+      console.error(error);
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  if (loading) return <p className="text-center mt-20">Loading blogs...</p>;
 
   return (
     <div className="max-w-6xl mx-auto p-6">
