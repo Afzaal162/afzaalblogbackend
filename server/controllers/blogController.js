@@ -1,6 +1,5 @@
 import Blog from "../modals/blog.js";
 import Comment from "../modals/comment.js";
-import Blog from "../modals/blog.js";
 import fs from "fs";
 import path from "path";
 
