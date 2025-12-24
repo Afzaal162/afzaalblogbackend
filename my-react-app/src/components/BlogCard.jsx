@@ -1,5 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
+// Import your fallback image
+import noImage from "../assets/blogs/blog1.png"; // adjust path if necessary
 
 const BlogCard = ({ blog }) => {
   // Handle image URL safely
@@ -13,7 +15,7 @@ const BlogCard = ({ blog }) => {
         src={imageUrl} // ✅ backend URL
         alt={blog.title}
         className="w-full h-48 object-cover"
-        onError={(e) => (e.target.src = "/no-image.png")} // fallback
+        onError={(e) => (e.target.src = noImage)} // use imported local image as fallback
       />
 
       <div className="p-4">
