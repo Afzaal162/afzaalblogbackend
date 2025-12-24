@@ -1,28 +1,31 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-const Header = ({
-  selected = "All",
-  setSelected = () => {},
-  searchInput = "",
-  setSearchInput = () => {},
-}) => {
-  const [localInput, setLocalInput] = useState(searchInput);
+const Header = ({ selected, setSelected, searchInput, setSearchInput }) => {
+  const [localInput, setLocalInput] = useState(searchInput || "");
   const navigate = useNavigate();
   const categories = ["All", "Web Dev", "Android Dev", "iOS Dev", "AI & ML"];
 
-  // Sync with parent searchInput
+  // Keep local input synced with parent
   useEffect(() => {
-    setLocalInput(searchInput);
+    setLocalInput(searchInput || "");
   }, [searchInput]);
 
   const handleSearch = () => {
-    setSearchInput(localInput);
+    if (typeof setSearchInput === "function") {
+      setSearchInput(localInput);
+    }
 
-    if (localInput.trim() === "") {
-      navigate("/");
+    if (!localInput.trim()) {
+      navigate("/"); // go to home if input is empty
     } else {
       navigate(`/search?query=${encodeURIComponent(localInput.trim())}`);
+    }
+  };
+
+  const handleCategoryClick = (category) => {
+    if (typeof setSelected === "function") {
+      setSelected(category);
     }
   };
 
@@ -66,7 +69,7 @@ const Header = ({
         {categories.map((category) => (
           <button
             key={category}
-            onClick={() => setSelected(category)}
+            onClick={() => handleCategoryClick(category)}
             className={`px-4 py-2 rounded-full text-sm font-medium transition
               ${selected === category
                 ? "bg-blue-500 text-white"
