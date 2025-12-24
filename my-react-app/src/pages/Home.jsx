@@ -10,9 +10,11 @@ const Home = () => {
   const [selected, setSelected] = useState("All");
   const [searchInput, setSearchInput] = useState("");
 
+  const API_URL = import.meta.env.VITE_API_URL;
+
   const fetchBlogs = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/blog/`);
+      const res = await fetch(`${API_URL}/api/blog/`);
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
       if (data.success && data.blogs.length > 0) {
@@ -33,22 +35,19 @@ const Home = () => {
     fetchBlogs();
   }, []);
 
+  // Filter blogs based on category and search input
+  const filteredBlogs = blogs.filter((blog) => {
+    const matchCategory =
+      selected === "All" || blog.category === selected;
+    const matchSearch =
+      searchInput === "" ||
+      blog.title.toLowerCase().includes(searchInput.toLowerCase());
+    return matchCategory && matchSearch;
+  });
+
   return (
     <div className="w-full bg-gray-50 min-h-screen flex flex-col">
       <Navbar />
-      <Header />
-
-      {loading ? (
-        <p className="text-center mt-20">Loading blogs...</p>
-      ) : blogs.length === 0 ? (
-        <p className="text-center mt-20">No blogs found</p>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-24 mx-8 sm:mx-16 xl:mx-40">
-          {blogs.map((blog) => (
-            <BlogCard key={blog._id} blog={blog} />
-          ))}
-        </div>
-      )}
       <Header
         selected={selected}
         setSelected={setSelected}
@@ -56,11 +55,17 @@ const Home = () => {
         setSearchInput={setSearchInput}
       />
 
-      {/* Render blogs based on selected category or searchInput */}
-      <BlogList selected={selected} searchInput={searchInput} />
-    </div>
-  );
-};
+      {loading ? (
+        <p className="text-center mt-20">Loading blogs...</p>
+      ) : filteredBlogs.length === 0 ? (
+        <p className="text-center mt-20">No blogs found</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-24 mx-8 sm:mx-16 xl:mx-40">
+          {filteredBlogs.map((blog) => (
+            <BlogCard key={blog._id} blog={blog} />
+          ))}
+        </div>
+      )}
 
       <Footer />
     </div>
