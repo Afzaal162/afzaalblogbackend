@@ -92,14 +92,25 @@ const AddBlog = () => {
           className="border p-2 rounded h-40"
           required
         />
-        <input
-          type="text"
-          placeholder="Category *"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className="border p-2 rounded"
-          required
-        />
+
+        {/* Category dropdown */}
+        <label className="flex flex-col">
+          <span className="mb-1 font-semibold">Category *</span>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="border p-2 rounded"
+            required
+          >
+            <option value="">-- Select Category --</option>
+            <option value="All">All</option>
+            <option value="Web Dev">Web Dev</option>
+            <option value="Android Dev">Android Dev</option>
+            <option value="iOS Dev">iOS Dev</option>
+            <option value="AI & ML">AI & ML</option>
+          </select>
+        </label>
+
         <input
           type="file"
           accept="image/*"
