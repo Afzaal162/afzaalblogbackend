@@ -1,5 +1,6 @@
 import Blog from "../modals/blog.js";
 import Comment from "../modals/comment.js";
+import Blog from "../modals/blog.js";
 import fs from "fs";
 import path from "path";
 
@@ -18,24 +19,17 @@ export const addBlog = async (req, res) => {
       });
     }
 
-    const uploadDir = path.join(process.cwd(), "uploads/blogs");
-    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-
-    const fileName = `${Date.now()}-${req.file.originalname}`;
-    const imagePath = `/uploads/blogs/${fileName}`;
-
-    fs.writeFileSync(path.join(uploadDir, fileName), req.file.buffer);
-
-    await Blog.create({
+    // Use Cloudinary URL directly
+    const blog = await Blog.create({
       title,
       subTitle,
       description,
       category,
-      image: imagePath,
+      image: req.file.path, // Cloudinary URL
       isPublished: isPublished ?? false,
     });
 
-    res.status(201).json({ success: true, message: "Blog created" });
+    res.status(201).json({ success: true, message: "Blog created", blog });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
