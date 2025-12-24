@@ -58,7 +58,7 @@ const SideBar = () => {
       >
         <HiChatAlt2 className="text-xl" />
         <p className="hidden md:inline-block">Comments</p>
-      </NavLink> */} */}
+      </NavLink> */} 
     </div>
   );
 };
