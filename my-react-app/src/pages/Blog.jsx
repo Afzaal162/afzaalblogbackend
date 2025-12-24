@@ -1,66 +1,113 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
-// Import your local image
-import noImage from "../assets/blogs/blog1.png"; // adjust path if needed
+import { useAppContext } from "../context/AppContent";
+import { toast } from "react-toastify";
 
-const Blog = () => {
-  const { id } = useParams();
-  const [blog, setBlog] = useState(null);
-  const [loading, setLoading] = useState(true);
+const Blog = ({ blog }) => {
+  const { axios } = useAppContext();
+  const [comments, setComments] = useState([]);
+  const [commentText, setCommentText] = useState("");
+  const [loadingComments, setLoadingComments] = useState(true);
+  const [submittingComment, setSubmittingComment] = useState(false);
 
-  const fetchBlogData = async () => {
+  // Fetch comments for this blog
+  const fetchComments = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/blog/${id}`);
-      const data = await res.json();
-      if (data.success) {
-        setBlog(data.blog);
+      setLoadingComments(true);
+      const res = await axios.get(`/api/blog/${blog._id}/comments`);
+      if (res.data.success) {
+        setComments(res.data.comments);
       } else {
-        console.error("Blog not found:", data.message);
-        setBlog(null);
+        toast.error(res.data.message || "Failed to fetch comments");
       }
-    } catch (err) {
-      console.error(err);
-      setBlog(null);
+    } catch (error) {
+      toast.error("Failed to fetch comments");
+      console.error(error);
     } finally {
-      setLoading(false);
+      setLoadingComments(false);
     }
   };
 
   useEffect(() => {
-    fetchBlogData();
-  }, [id]);
+    fetchComments();
+  }, [blog._id]);
 
-  if (loading) return <p className="text-center mt-20">Loading blog...</p>;
-  if (!blog) return <p className="text-center mt-20">Blog not found ❌</p>;
+  // Submit a new comment
+  const submitComment = async () => {
+    if (!commentText.trim()) return toast.error("Comment cannot be empty");
 
-  const imageUrl = blog.image
-    ? blog.image.startsWith("http")
-      ? blog.image
-      : `${import.meta.env.VITE_API_URL}${blog.image}`
-    : noImage; // fallback if blog.image is missing
+    try {
+      setSubmittingComment(true);
+      const res = await axios.post(`/api/blog/${blog._id}/comment`, {
+        text: commentText,
+      });
+
+      if (res.data.success) {
+        setComments((prev) => [...prev, res.data.comment]);
+        setCommentText("");
+        toast.success("Comment added!");
+      } else {
+        toast.error(res.data.message || "Failed to add comment");
+      }
+    } catch (error) {
+      toast.error("Failed to add comment");
+      console.error(error);
+    } finally {
+      setSubmittingComment(false);
+    }
+  };
 
   return (
-    <div className="w-full min-h-screen bg-gray-50">
-      <Navbar />
+    <div className="max-w-4xl mx-auto p-6">
+      {/* Existing Blog Content */}
+      <h1 className="text-3xl font-bold mb-4">{blog.title}</h1>
+      <p className="text-gray-700 mb-6">{blog.content}</p>
 
-      <div className="max-w-4xl mx-auto px-6 py-12">
-        <h1 className="text-4xl font-bold mb-2">{blog.title}</h1>
-        <p className="text-gray-500 mb-4">{blog.subTitle}</p>
-        <img
-          src={imageUrl}
-          alt={blog.title}
-          className="w-full rounded-xl shadow mb-8"
-          onError={(e) => (e.target.src = noImage)} // fallback to local image
-        />
-        <div
-          className="text-lg text-gray-700 leading-8 mb-8"
-          dangerouslySetInnerHTML={{ __html: blog.description }}
-        />
+      {/* Comment Section */}
+      <div className="mt-10">
+        <h3 className="text-2xl font-semibold mb-4">
+          Comments ({comments.length})
+        </h3>
+
+        {/* Comment Input */}
+        <div className="flex flex-col md:flex-row gap-3 mb-6">
+          <textarea
+            value={commentText}
+            onChange={(e) => setCommentText(e.target.value)}
+            placeholder="Write your comment..."
+            className="flex-1 p-3 border rounded-md resize-none focus:outline-blue-500"
+            rows={3}
+          />
+          <button
+            onClick={submitComment}
+            disabled={submittingComment}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-5 py-3 rounded-md disabled:opacity-50 transition"
+          >
+            {submittingComment ? "Posting..." : "Post Comment"}
+          </button>
+        </div>
+
+        {/* Comments List */}
+        {loadingComments ? (
+          <p className="text-gray-500">Loading comments...</p>
+        ) : comments.length === 0 ? (
+          <p className="text-gray-400">No comments yet. Be the first to comment!</p>
+        ) : (
+          <ul className="space-y-4">
+            {comments.map((comment) => (
+              <li
+                key={comment._id}
+                className="border p-4 rounded-md shadow-sm bg-white"
+              >
+                <p className="text-gray-800">{comment.text}</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  By {comment.userName || "Anonymous"} •{" "}
+                  {new Date(comment.createdAt).toLocaleString()}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
-
-      <Footer />
     </div>
   );
 };
