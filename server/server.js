@@ -1,3 +1,4 @@
+// server.js (Vercel-ready)
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -6,18 +7,17 @@ import cors from "cors";
 import mongoose from "mongoose";
 import blogRouter from "./routes/blogRouter.js";
 import adminRouter from "./routes/adminRoutes.js";
-import path from "path";
 
 const app = express();
 
 /* ================================
-   ENV CHECK (DO NOT EXIT)
+   ENV CHECK
 ================================ */
 console.log("FRONTEND_URL:", process.env.FRONTEND_URL || "❌ missing");
 console.log("MONGO_URI:", process.env.MONGO_URI ? "✅ exists" : "❌ missing");
 
 /* ================================
-   CORS CONFIG (VERCEL SAFE)
+   CORS CONFIG
 ================================ */
 const allowedOrigins = [
   "https://afzaalblogfrontend.vercel.app",
@@ -26,16 +26,9 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    console.log("Incoming origin:", origin);
-
     if (!origin) return callback(null, true); // Postman / server calls
-
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-
-    console.warn("Blocked by CORS:", origin);
-    return callback(null, false); // ❗ DO NOT THROW ERROR
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(null, false);
   },
   credentials: true,
 }));
@@ -45,7 +38,6 @@ app.use(cors({
 ================================ */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 /* ================================
    ROUTES
@@ -58,16 +50,24 @@ app.use("/api/blog", blogRouter);
 app.use("/api/admin", adminRouter);
 
 /* ================================
-   MONGODB (NO EXIT)
+   MONGODB CONNECTION
 ================================ */
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB connected"))
-  .catch(err => console.error("❌ MongoDB error:", err.message));
+let isConnected = false;
+
+async function connectDB() {
+  if (isConnected) return; // Use cached connection
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("✅ MongoDB connected");
+    isConnected = true;
+  } catch (err) {
+    console.error("❌ MongoDB error:", err.message);
+  }
+}
+
+connectDB();
 
 /* ================================
-   SERVER
+   EXPORT APP FOR VERCEL
 ================================ */
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+export default app;
