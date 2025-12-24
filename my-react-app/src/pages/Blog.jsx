@@ -3,25 +3,26 @@ import { useAppContext } from "../context/AppContent";
 import { toast } from "react-toastify";
 
 const Blog = ({ blog }) => {
-  const { axios } = useAppContext();
+  const { axios } = useAppContext(); // Axios instance
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState("");
   const [loadingComments, setLoadingComments] = useState(true);
-  const [submittingComment, setSubmittingComment] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   // Fetch comments for this blog
   const fetchComments = async () => {
+    if (!blog?._id) return; // guard against undefined
     try {
       setLoadingComments(true);
       const res = await axios.get(`/api/blog/${blog._id}/comments`);
       if (res.data.success) {
         setComments(res.data.comments);
       } else {
-        toast.error(res.data.message || "Failed to fetch comments");
+        toast.error(res.data.message || "Failed to load comments");
       }
     } catch (error) {
-      toast.error("Failed to fetch comments");
       console.error(error);
+      toast.error("Failed to fetch comments");
     } finally {
       setLoadingComments(false);
     }
@@ -29,60 +30,60 @@ const Blog = ({ blog }) => {
 
   useEffect(() => {
     fetchComments();
-  }, [blog._id]);
+  }, [blog]);
 
-  // Submit a new comment
+  // Submit new comment
   const submitComment = async () => {
-    if (!commentText.trim()) return toast.error("Comment cannot be empty");
+    if (!commentText.trim()) return toast.warning("Comment cannot be empty");
+    if (!blog?._id) return;
 
     try {
-      setSubmittingComment(true);
+      setSubmitting(true);
       const res = await axios.post(`/api/blog/${blog._id}/comment`, {
         text: commentText,
       });
-
       if (res.data.success) {
+        toast.success("Comment added!");
+        // Show new comment immediately
         setComments((prev) => [...prev, res.data.comment]);
         setCommentText("");
-        toast.success("Comment added!");
       } else {
         toast.error(res.data.message || "Failed to add comment");
       }
     } catch (error) {
-      toast.error("Failed to add comment");
       console.error(error);
+      toast.error("Failed to submit comment");
     } finally {
-      setSubmittingComment(false);
+      setSubmitting(false);
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      {/* Existing Blog Content */}
-      <h1 className="text-3xl font-bold mb-4">{blog.title}</h1>
-      <p className="text-gray-700 mb-6">{blog.content}</p>
+    <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded">
+      {/* Blog Content */}
+      <h1 className="text-3xl font-bold mb-4">{blog?.title}</h1>
+      <p className="text-gray-600 mb-2">{blog?.subTitle}</p>
+      <div className="text-gray-700 mb-6">{blog?.content}</div>
 
       {/* Comment Section */}
       <div className="mt-10">
-        <h3 className="text-2xl font-semibold mb-4">
-          Comments ({comments.length})
-        </h3>
+        <h2 className="text-2xl font-semibold mb-4">Comments</h2>
 
         {/* Comment Input */}
-        <div className="flex flex-col md:flex-row gap-3 mb-6">
-          <textarea
+        <div className="flex flex-col md:flex-row gap-2 mb-4">
+          <input
+            type="text"
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
             placeholder="Write your comment..."
-            className="flex-1 p-3 border rounded-md resize-none focus:outline-blue-500"
-            rows={3}
+            className="flex-1 border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
           <button
             onClick={submitComment}
-            disabled={submittingComment}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-5 py-3 rounded-md disabled:opacity-50 transition"
+            disabled={submitting}
+            className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
           >
-            {submittingComment ? "Posting..." : "Post Comment"}
+            {submitting ? "Submitting..." : "Submit"}
           </button>
         </div>
 
@@ -90,18 +91,18 @@ const Blog = ({ blog }) => {
         {loadingComments ? (
           <p className="text-gray-500">Loading comments...</p>
         ) : comments.length === 0 ? (
-          <p className="text-gray-400">No comments yet. Be the first to comment!</p>
+          <p className="text-gray-500">No comments yet. Be the first!</p>
         ) : (
           <ul className="space-y-4">
             {comments.map((comment) => (
               <li
-                key={comment._id}
-                className="border p-4 rounded-md shadow-sm bg-white"
+                key={comment?._id}
+                className="border p-3 rounded bg-gray-50 shadow-sm"
               >
-                <p className="text-gray-800">{comment.text}</p>
-                <p className="text-sm text-gray-500 mt-1">
-                  By {comment.userName || "Anonymous"} •{" "}
-                  {new Date(comment.createdAt).toLocaleString()}
+                <p className="text-gray-800 font-medium">{comment?.userName || "Anonymous"}</p>
+                <p className="text-gray-700">{comment?.text}</p>
+                <p className="text-gray-400 text-sm mt-1">
+                  {new Date(comment?.createdAt).toLocaleString()}
                 </p>
               </li>
             ))}
