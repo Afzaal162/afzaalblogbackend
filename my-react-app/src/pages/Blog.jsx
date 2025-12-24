@@ -24,50 +24,52 @@ const Blog = () => {
   };
 
   // Fetch comments for this blog
-  const fetchComments = async () => {
-    try {
-      const res = await fetch(`${API_URL}/api/blog/${id}/comments`);
-      const data = await res.json();
-      if (data.success) setComments(data.comments);
-    } catch (err) {
-      console.error(err);
+ // Submit comment
+const submitComment = async () => {
+  if (!name.trim() || !commentText.trim()) {
+    return toast.warning("Name and comment cannot be empty");
+  }
+
+  try {
+    setSubmitting(true);
+    const res = await fetch(`${API_URL}/api/blog/add-comment`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        blog: id, // pass blog id
+        name: name.trim(),
+        content: commentText.trim(),
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      setComments((prev) => [...prev, data.comment]);
+      setCommentText("");
+      setName("");
+      toast.success("Comment added successfully!");
+    } else {
+      toast.error(data.message || "Failed to add comment");
     }
-  };
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to add comment");
+  } finally {
+    setSubmitting(false);
+  }
+};
 
-  // ✅ Submit comment
-  const submitComment = async () => {
-    if (!name.trim() || !commentText.trim()) {
-      return toast.warning("Name and comment cannot be empty");
-    }
-
-    try {
-      setSubmitting(true);
-      const res = await fetch(`${API_URL}/api/blog/${id}/comment`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: name.trim(),
-          content: commentText.trim(),
-        }),
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        setComments((prev) => [...prev, data.comment]);
-        setCommentText("");
-        setName("");
-        toast.success("Comment added successfully!");
-      } else {
-        toast.error(data.message || "Failed to add comment");
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to add comment");
-    } finally {
-      setSubmitting(false);
-    }
-  };
+// Fetch comments
+const fetchComments = async () => {
+  try {
+    const res = await fetch(`${API_URL}/api/blog/comments/${id}`);
+    const data = await res.json();
+    if (data.success) setComments(data.comments);
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   useEffect(() => {
     fetchBlog();
