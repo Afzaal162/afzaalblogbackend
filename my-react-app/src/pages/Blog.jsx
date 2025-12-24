@@ -3,10 +3,12 @@ import { useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { toast } from "react-toastify";
-import fallbackImage from "../assets/blogs/blog1.png";
+import fallbackImage from "../assets/blogs/blog1.png"; // fallback image
+import { useAppContext } from "../context/AppContent";
 
 const Blog = () => {
   const { id } = useParams();
+  const { axios } = useAppContext(); // Axios instance with backend URL
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -15,42 +17,39 @@ const Blog = () => {
   const [loadingComments, setLoadingComments] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  const API_URL = "https://afzaal-blogging-website.vercel.app";
-
-  // Fetch blog data
   const fetchBlogData = async () => {
     try {
-      const res = await fetch(`${API_URL}/api/blog/${id}`);
-      const data = await res.json();
-      if (data.success) {
-        setBlog(data.blog);
+      setLoading(true);
+      const res = await axios.get(`/api/blog/${id}`);
+      if (res.data.success) {
+        setBlog(res.data.blog);
       } else {
-        console.error("Blog not found:", data.message);
+        toast.error(res.data.message || "Blog not found");
         setBlog(null);
       }
     } catch (err) {
       console.error(err);
+      toast.error("Failed to fetch blog");
       setBlog(null);
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch comments
   const fetchComments = async () => {
     if (!id) return;
     try {
       setLoadingComments(true);
-      const res = await fetch(`${API_URL}/api/blog/${id}/comments`);
-      const data = await res.json();
-      if (data.success) {
-        setComments(data.comments);
+      const res = await axios.get(`/api/blog/${id}/comments`);
+      if (res.data.success) {
+        setComments(res.data.comments);
       } else {
-        toast.error(data.message || "Failed to fetch comments");
+        toast.error(res.data.message || "Failed to load comments");
+        setComments([]);
       }
     } catch (err) {
       console.error(err);
-      toast.error("Failed to fetch comments");
+      toast.error("Failed to load comments");
     } finally {
       setLoadingComments(false);
     }
@@ -61,23 +60,19 @@ const Blog = () => {
     fetchComments();
   }, [id]);
 
-  // Submit new comment
   const submitComment = async () => {
     if (!commentText.trim()) return toast.warning("Comment cannot be empty");
     try {
       setSubmitting(true);
-      const res = await fetch(`${API_URL}/api/blog/${id}/comment`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: commentText }),
+      const res = await axios.post(`/api/blog/${id}/comment`, {
+        text: commentText,
       });
-      const data = await res.json();
-      if (data.success) {
+      if (res.data.success) {
         toast.success("Comment added!");
-        setComments((prev) => [...prev, data.comment]);
+        setComments((prev) => [...prev, res.data.comment]);
         setCommentText("");
       } else {
-        toast.error(data.message || "Failed to add comment");
+        toast.error(res.data.message || "Failed to submit comment");
       }
     } catch (err) {
       console.error(err);
@@ -93,7 +88,7 @@ const Blog = () => {
   const imageUrl = blog.image
     ? blog.image.startsWith("http")
       ? blog.image
-      : `${API_URL}${blog.image}`
+      : `${import.meta.env.VITE_API_URL}${blog.image}`
     : fallbackImage;
 
   return (
@@ -143,15 +138,15 @@ const Blog = () => {
             <ul className="space-y-4">
               {comments.map((comment) => (
                 <li
-                  key={comment?._id}
+                  key={comment._id}
                   className="border p-3 rounded bg-gray-50 shadow-sm"
                 >
                   <p className="text-gray-800 font-medium">
-                    {comment?.userName || "Anonymous"}
+                    {comment.userName || "Anonymous"}
                   </p>
-                  <p className="text-gray-700">{comment?.text}</p>
+                  <p className="text-gray-700">{comment.text}</p>
                   <p className="text-gray-400 text-sm mt-1">
-                    {new Date(comment?.createdAt).toLocaleString()}
+                    {new Date(comment.createdAt).toLocaleString()}
                   </p>
                 </li>
               ))}
