@@ -9,27 +9,26 @@ const BlogList = () => {
   const [processing, setProcessing] = useState(false); // For button disable
 
   // Fetch all blogs for admin
-  const fetchBlogs = async () => {
-    try {
-      setLoading(true);
-const res = await axios.get("/api/blog/all", {
-  headers: {
-    Authorization: `Bearer ${localStorage.getItem("token")}`,
-  },
-});
-      if (res.data.success) {
-        setBlogs(res.data.blogs);
-      } else {
-        setBlogs([]);
-        toast.error(res.data.message || "Failed to fetch blogs");
-      }
-    } catch (error) {
-      toast.error("Failed to fetch blogs");
-      console.error(error);
-    } finally {
-      setLoading(false);
+ // Fetch all blogs for admin
+const fetchBlogs = async () => {
+  try {
+    setLoading(true);
+    // Use the correct admin route; no need to manually add headers if axios instance already has token
+    const res = await axios.get("/api/blog/admin"); 
+
+    if (res.data.success) {
+      setBlogs(res.data.blogs);
+    } else {
+      setBlogs([]);
+      toast.error(res.data.message || "Failed to fetch blogs");
     }
-  };
+  } catch (error) {
+    toast.error("Failed to fetch blogs");
+    console.error(error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchBlogs();
