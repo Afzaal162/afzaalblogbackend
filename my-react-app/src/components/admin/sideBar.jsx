@@ -39,7 +39,7 @@ const SideBar = () => {
       </NavLink>
 
       {/* Blog List */}
-      <NavLink
+      {/* <NavLink
         to="/admin/listBlog"
         className={({ isActive }) =>
           `${linkClasses} ${isActive ? activeClasses : ""}`
@@ -50,7 +50,7 @@ const SideBar = () => {
       </NavLink>
 
       {/* Comments */}
-      <NavLink
+      {/* <NavLink
         to="/admin/comments"
         className={({ isActive }) =>
           `${linkClasses} ${isActive ? activeClasses : ""}`
@@ -58,7 +58,7 @@ const SideBar = () => {
       >
         <HiChatAlt2 className="text-xl" />
         <p className="hidden md:inline-block">Comments</p>
-      </NavLink>
+      </NavLink> */} */}
     </div>
   );
 };
