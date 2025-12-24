@@ -5,7 +5,7 @@ import { useAppContext } from "../../context/AppContent";
 import { toast } from "react-toastify";
 
 const Dashboard = () => {
-  const { axios } = useAppContext(); // Axios instance with baseURL = VITE_API_URL
+  const { axios } = useAppContext(); // Axios instance from context
   const [dashboardData, setDashboardData] = useState({
     blogs: 0,
     comments: 0,
@@ -17,20 +17,23 @@ const Dashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      // Fetch blogs
-      const blogRes = await axios.get("/api/blog/admin");
-      // Fetch comments
-      const commentRes = await axios.get("/api/blog/admin/comments");
+
+      // Make sure Axios uses full URL
+      const blogRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/blog/admin`);
+      const commentRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/blog/admin/comments`);
+
+      console.log("Blogs:", blogRes.data);      // Debug
+      console.log("Comments:", commentRes.data); // Debug
 
       if (blogRes.data.success && commentRes.data.success) {
-        const blogs = blogRes.data.blogs;
-        const comments = commentRes.data.comments;
+        const blogs = blogRes.data.blogs || [];
+        const comments = commentRes.data.comments || [];
 
         setDashboardData({
           blogs: blogs.length,
           drafts: blogs.filter((b) => !b.isPublished).length,
           comments: comments.length,
-          recentBlogs: blogs.slice(0, 5), // latest 5 blogs
+          recentBlogs: blogs.slice(0, 5),
         });
       } else {
         toast.error("Failed to fetch dashboard data");
@@ -47,8 +50,7 @@ const Dashboard = () => {
     fetchDashboardData();
   }, []);
 
-  if (loading)
-    return <p className="text-center mt-20">Loading dashboard data...</p>;
+  if (loading) return <p className="text-center mt-20">Loading dashboard data...</p>;
 
   return (
     <div className="flex-1 p-4 md:p-10 bg-blue-50/50 min-h-screen">
@@ -93,11 +95,7 @@ const Dashboard = () => {
               </thead>
               <tbody>
                 {dashboardData.recentBlogs.map((blog, index) => (
-                  <BlogtableItem
-                    key={blog._id}
-                    blog={blog}
-                    index={index + 1}
-                  />
+                  <BlogtableItem key={blog._id} blog={blog} index={index + 1} />
                 ))}
               </tbody>
             </table>
