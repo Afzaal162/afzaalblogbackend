@@ -3,37 +3,39 @@ import { useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { toast } from "react-toastify";
-import { useAppContext } from "../context/AppContent"; // For axios instance
+import { useAppContext } from "../context/AppContent";
 
 const Blog = () => {
   const { id } = useParams();
   const { axios } = useAppContext(); // Axios instance with baseURL
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
+
   const [comments, setComments] = useState([]);
-  const [loadingComments, setLoadingComments] = useState(true);
   const [commentText, setCommentText] = useState("");
+  const [loadingComments, setLoadingComments] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // Fetch blog data
-  const fetchBlogData = async () => {
+  // Fetch blog content
+  const fetchBlog = async () => {
     try {
       const res = await axios.get(`/api/blog/${id}`);
       if (res.data.success) {
         setBlog(res.data.blog);
       } else {
-        console.error("Blog not found:", res.data.message);
+        toast.error(res.data.message || "Blog not found");
         setBlog(null);
       }
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to fetch blog");
       setBlog(null);
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch comments
+  // Fetch comments for this blog
   const fetchComments = async () => {
     if (!id) return;
     try {
@@ -55,11 +57,11 @@ const Blog = () => {
   // Submit a new comment
   const submitComment = async () => {
     if (!commentText.trim()) return toast.warning("Comment cannot be empty");
+    if (!id) return;
+
     try {
       setSubmitting(true);
-      const res = await axios.post(`/api/blog/${id}/comment`, {
-        text: commentText,
-      });
+      const res = await axios.post(`/api/blog/${id}/comment`, { text: commentText });
       if (res.data.success) {
         toast.success("Comment added!");
         setComments((prev) => [...prev, res.data.comment]);
@@ -76,16 +78,20 @@ const Blog = () => {
   };
 
   useEffect(() => {
-    fetchBlogData();
+    fetchBlog();
+  }, [id]);
+
+  useEffect(() => {
     fetchComments();
   }, [id]);
 
   if (loading) return <p className="text-center mt-20">Loading blog...</p>;
   if (!blog) return <p className="text-center mt-20">Blog not found ❌</p>;
 
-  const imageUrl = blog.image?.startsWith("http")
-    ? blog.image
-    : `${import.meta.env.VITE_API_URL}${blog.image}`;
+  const imageUrl =
+    blog.image?.startsWith("http")
+      ? blog.image
+      : `${import.meta.env.VITE_API_URL}${blog.image}`;
 
   return (
     <div className="w-full min-h-screen bg-gray-50">
@@ -95,7 +101,7 @@ const Blog = () => {
         {/* Blog Content */}
         <h1 className="text-4xl font-bold mb-2">{blog.title}</h1>
         <p className="text-gray-500 mb-4">{blog.subTitle}</p>
-        {imageUrl && (
+        {blog.image && (
           <img
             src={imageUrl}
             alt={blog.title}
@@ -112,7 +118,7 @@ const Blog = () => {
         <div className="mt-12">
           <h2 className="text-2xl font-semibold mb-4">Comments</h2>
 
-          {/* Comment Input */}
+          {/* Add Comment */}
           <div className="flex flex-col md:flex-row gap-2 mb-6">
             <input
               type="text"
