@@ -7,6 +7,8 @@ import Header from "../components/Header";
 const Home = () => {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState("All");
+  const [searchInput, setSearchInput] = useState("");
 
   const fetchBlogs = async () => {
     try {
@@ -47,6 +49,18 @@ const Home = () => {
           ))}
         </div>
       )}
+      <Header
+        selected={selected}
+        setSelected={setSelected}
+        searchInput={searchInput}
+        setSearchInput={setSearchInput}
+      />
+
+      {/* Render blogs based on selected category or searchInput */}
+      <BlogList selected={selected} searchInput={searchInput} />
+    </div>
+  );
+};
 
       <Footer />
     </div>
