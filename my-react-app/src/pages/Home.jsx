@@ -8,26 +8,16 @@ const Home = () => {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const API_URL = import.meta.env.VITE_API_URL;
-
   const fetchBlogs = async () => {
     try {
-      setLoading(true);
-
-      // ✅ FIX 1: correct backend route
-      const res = await fetch(`${API_URL}/api/blog/all`);
-
-      if (!res.ok) {
-        throw new Error(`HTTP error ${res.status}`);
-      }
-
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/blog/`);
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
-
-      if (data.success) {
-        setBlogs(data.blogs || []);
+      if (data.success && data.blogs.length > 0) {
+        setBlogs(data.blogs);
       } else {
-        console.error("Failed to fetch blogs:", data.message);
         setBlogs([]);
+        console.warn("No blogs found in DB");
       }
     } catch (err) {
       console.error("Error fetching blogs:", err);
