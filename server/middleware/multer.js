@@ -1,11 +1,12 @@
+// multer.js
 import multer from "multer";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
-import cloudinary from "./cofig/cloudinary.js";
+import cloudinary from "../cofig/cloudinary.js"; // ✅ fixed path
 
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
-    folder: "blogs",          // Folder in Cloudinary
+    folder: "blogs", // Folder in Cloudinary
     allowed_formats: ["jpg", "jpeg", "png", "webp"],
   },
 });
