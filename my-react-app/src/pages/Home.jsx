@@ -21,10 +21,9 @@ const Home = () => {
         setBlogs(data.blogs);
       } else {
         setBlogs([]);
-        console.warn("No blogs found in DB");
       }
     } catch (err) {
-      console.error("Error fetching blogs:", err);
+      console.error(err);
       setBlogs([]);
     } finally {
       setLoading(false);
@@ -48,11 +47,12 @@ const Home = () => {
   return (
     <div className="w-full bg-gray-50 min-h-screen flex flex-col">
       <Navbar />
+
       <Header
         selected={selected}
-        setSelected={setSelected}
+        setSelected={setSelected}          // ✅ pass the actual setter
         searchInput={searchInput}
-        setSearchInput={setSearchInput}
+        setSearchInput={setSearchInput}    // ✅ pass the actual setter
       />
 
       {loading ? (
