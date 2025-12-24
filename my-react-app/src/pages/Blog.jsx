@@ -2,50 +2,52 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { useAppContext } from "../context/AppContent";
 import { toast } from "react-toastify";
+
+// Import fallback image
+import fallbackImage from "../assets/blogs/blog1.png";
 
 const Blog = () => {
   const { id } = useParams();
+  const { axios } = useAppContext(); // Axios instance with baseURL
   const [blog, setBlog] = useState(null);
-  const [loadingBlog, setLoadingBlog] = useState(true);
+  const [loading, setLoading] = useState(true);
 
+  // Comments
   const [comments, setComments] = useState([]);
-  const [loadingComments, setLoadingComments] = useState(true);
   const [commentText, setCommentText] = useState("");
+  const [loadingComments, setLoadingComments] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  const API_URL = import.meta.env.VITE_API_URL;
-
-  // Fetch blog content
   const fetchBlog = async () => {
     try {
-      setLoadingBlog(true);
-      const res = await fetch(`${API_URL}/api/blog/${id}`);
-      const data = await res.json();
-      if (data.success) {
-        setBlog(data.blog);
+      setLoading(true);
+      const res = await axios.get(`/api/blog/${id}`);
+      if (res.data.success) {
+        setBlog(res.data.blog);
       } else {
-        toast.error(data.message || "Blog not found");
+        toast.error(res.data.message || "Blog not found");
+        setBlog(null);
       }
     } catch (err) {
       console.error(err);
       toast.error("Failed to fetch blog");
+      setBlog(null);
     } finally {
-      setLoadingBlog(false);
+      setLoading(false);
     }
   };
 
-  // Fetch comments
   const fetchComments = async () => {
     if (!id) return;
     try {
       setLoadingComments(true);
-      const res = await fetch(`${API_URL}/api/blog/${id}/comments`);
-      const data = await res.json();
-      if (data.success) {
-        setComments(data.comments);
+      const res = await axios.get(`/api/blog/${id}/comments`);
+      if (res.data.success) {
+        setComments(res.data.comments);
       } else {
-        toast.error(data.message || "Failed to fetch comments");
+        toast.error(res.data.message || "Failed to fetch comments");
       }
     } catch (err) {
       console.error(err);
@@ -55,24 +57,17 @@ const Blog = () => {
     }
   };
 
-  // Submit comment
   const submitComment = async () => {
     if (!commentText.trim()) return toast.warning("Comment cannot be empty");
-
     try {
       setSubmitting(true);
-      const res = await fetch(`${API_URL}/api/blog/${id}/comment`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: commentText }),
-      });
-      const data = await res.json();
-      if (data.success) {
+      const res = await axios.post(`/api/blog/${id}/comment`, { text: commentText });
+      if (res.data.success) {
         toast.success("Comment added!");
-        setComments((prev) => [...prev, data.comment]);
+        setComments((prev) => [...prev, res.data.comment]);
         setCommentText("");
       } else {
-        toast.error(data.message || "Failed to submit comment");
+        toast.error(res.data.message || "Failed to add comment");
       }
     } catch (err) {
       console.error(err);
@@ -87,40 +82,42 @@ const Blog = () => {
     fetchComments();
   }, [id]);
 
-  if (loadingBlog) return <p className="text-center mt-20">Loading blog...</p>;
+  if (loading) return <p className="text-center mt-20">Loading blog...</p>;
   if (!blog) return <p className="text-center mt-20">Blog not found ❌</p>;
 
-  const imageUrl = blog.image?.startsWith("http")
-    ? blog.image
-    : `${API_URL}${blog.image}`;
+  // Determine image URL
+  const imageUrl =
+    blog.image && blog.image.startsWith("http")
+      ? blog.image
+      : blog.image
+      ? `${import.meta.env.VITE_API_URL}${blog.image}`
+      : fallbackImage;
 
   return (
-    <div className="w-full min-h-screen bg-gray-50 flex flex-col">
+    <div className="w-full min-h-screen bg-gray-50">
       <Navbar />
 
-      <main className="flex-1 max-w-4xl mx-auto px-6 py-12">
+      <div className="max-w-4xl mx-auto px-6 py-12">
         {/* Blog Content */}
         <h1 className="text-4xl font-bold mb-2">{blog.title}</h1>
         <p className="text-gray-500 mb-4">{blog.subTitle}</p>
-        {blog.image && (
-          <img
-            src={imageUrl}
-            alt={blog.title}
-            className="w-full rounded-xl shadow mb-8"
-            onError={(e) => (e.target.src = "/no-image.png")}
-          />
-        )}
+        <img
+          src={imageUrl}
+          alt={blog.title}
+          className="w-full rounded-xl shadow mb-8"
+          onError={(e) => (e.target.src = fallbackImage)}
+        />
         <div
-          className="text-lg text-gray-700 leading-8 mb-12"
+          className="text-lg text-gray-700 leading-8 mb-8"
           dangerouslySetInnerHTML={{ __html: blog.description }}
         />
 
-        {/* Comment Section */}
+        {/* Comments Section */}
         <div className="mt-10">
           <h2 className="text-2xl font-semibold mb-4">Comments</h2>
 
           {/* Comment Input */}
-          <div className="flex flex-col md:flex-row gap-2 mb-6">
+          <div className="flex flex-col md:flex-row gap-2 mb-4">
             <input
               type="text"
               value={commentText}
@@ -146,22 +143,22 @@ const Blog = () => {
             <ul className="space-y-4">
               {comments.map((comment) => (
                 <li
-                  key={comment._id}
+                  key={comment?._id}
                   className="border p-3 rounded bg-gray-50 shadow-sm"
                 >
                   <p className="text-gray-800 font-medium">
-                    {comment.userName || "Anonymous"}
+                    {comment?.userName || "Anonymous"}
                   </p>
-                  <p className="text-gray-700">{comment.text}</p>
+                  <p className="text-gray-700">{comment?.text}</p>
                   <p className="text-gray-400 text-sm mt-1">
-                    {new Date(comment.createdAt).toLocaleString()}
+                    {new Date(comment?.createdAt).toLocaleString()}
                   </p>
                 </li>
               ))}
             </ul>
           )}
         </div>
-      </main>
+      </div>
 
       <Footer />
     </div>
