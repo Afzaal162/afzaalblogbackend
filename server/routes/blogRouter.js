@@ -30,8 +30,10 @@ router.post("/admin/toggle-publish", auth, togglePublish);
 router.get("/admin/comments", auth, getAllComments);
 router.post("/admin/comments/update", auth, updateCommentStatus);
 
-router.post("/add-comment", addComment);
-router.get("/comments/:blogId", getBlogComments);
+// routes
+router.post("/:blogId/comment", addComment);
+router.get("/:blogId/comments", getBlogComments);
+
 
 /* ======================
    PUBLIC BLOG ROUTES
