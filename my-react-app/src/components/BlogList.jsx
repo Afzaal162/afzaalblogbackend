@@ -9,28 +9,26 @@ const BlogList = () => {
   const [processing, setProcessing] = useState(false); // For button disable
 
   // Fetch all blogs for admin
-  const fetchBlogs = async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/blog/all`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+ // Fetch all blogs for admin
+const fetchBlogs = async () => {
+  try {
+    setLoading(true);
+    // Use axios instance with baseURL already set to backend
+    const res = await axios.get("/api/blog/all"); // no hardcoded frontend URL
 
-      if (res.data.success) {
-        setBlogs(res.data.blogs);
-      } else {
-        setBlogs([]);
-        toast.error(res.data.message || "Failed to fetch blogs");
-      }
-    } catch (error) {
-      toast.error("Failed to fetch blogs");
-      console.error(error);
-    } finally {
-      setLoading(false);
+    if (res.data.success) {
+      setBlogs(res.data.blogs);
+    } else {
+      setBlogs([]);
+      toast.error(res.data.message || "Failed to fetch blogs");
     }
-  };
+  } catch (error) {
+    toast.error("Failed to fetch blogs");
+    console.error("Fetch blog error:", error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchBlogs();
