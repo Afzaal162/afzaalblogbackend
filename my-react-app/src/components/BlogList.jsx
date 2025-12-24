@@ -12,7 +12,11 @@ const BlogList = () => {
   const fetchBlogs = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("/api/blog/all"); // admin route
+const res = await axios.get("/api/blog/all", {
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem("token")}`,
+  },
+});
       if (res.data.success) {
         setBlogs(res.data.blogs);
       } else {
