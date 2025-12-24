@@ -130,24 +130,26 @@ export const togglePublish = async (req, res) => {
 // Add comment (user side)
 export const addComment = async (req, res) => {
   try {
-    const { blog, name, content } = req.body;
-    if (!blog || !name || !content) {
+    const { blogId } = req.params;
+    const { name, content } = req.body;
+
+    if (!blogId || !name || !content) {
       return res.status(400).json({ success: false, message: "Missing fields" });
     }
 
-   const comment = await Comment.create({
-  blog,
-  name,
-  content,
-  isApproved: true, // auto-approved, visible immediately
-});
+    const comment = await Comment.create({
+      blog: blogId,
+      name,
+      content,
+      isApproved: true,
+    });
 
-
-    res.json({ success: true, message: "Comment submitted for review", comment });
+    res.json({ success: true, message: "Comment submitted", comment });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 // Get comments for a specific blog (only approved)
 export const getBlogComments = async (req, res) => {
