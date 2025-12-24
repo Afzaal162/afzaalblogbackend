@@ -19,7 +19,7 @@ const Login = () => {
     setLoading(true)
     try {
       const { data } = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/api/admin/login`, // use full backend URL
+        `${import.meta.env.VITE_API_URL}/api/admin/login`, // ✅ fixed environment variable
         { email, password }
       )
 
