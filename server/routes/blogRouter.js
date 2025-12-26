@@ -12,6 +12,7 @@ import {
   getBlogComments,
   getAllComments,
   updateCommentStatus,
+    updateBlogById
 } from "../controllers/blogController.js";
 
 const router = express.Router();
@@ -21,6 +22,7 @@ const router = express.Router();
 ====================== */
 router.get("/admin", auth, getAllBlogsForAdmin);
 router.post("/add", auth, upload.single("image"), addBlog);
+router.put("/admin/update/:id", auth, upload.single("image"), updateBlogById); // ✅ ADD THIS
 router.delete("/admin/:id", auth, deleteBlogById);
 router.post("/admin/toggle-publish", auth, togglePublish);
 
