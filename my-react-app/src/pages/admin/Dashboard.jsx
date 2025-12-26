@@ -88,9 +88,12 @@ const Dashboard = () => {
                 <tr>
                   <th className="px-4 py-3">#</th>
                   <th className="px-4 py-3">Title</th>
+                  <th className="px-4 py-3">Categor</th>
+                  <th className="px-4 py-3">Tech-Technology</th>
                   <th className="px-4 py-3">Date</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Action</th>
+                                    <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3">Edit</th>
+
                 </tr>
               </thead>
               <tbody>
