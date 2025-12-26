@@ -122,6 +122,40 @@ export const togglePublish = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+export const updateBlog = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, description, content, isPublished } = req.body;
+
+    const blog = await Blog.findById(id);
+    if (!blog) {
+      return res.status(404).json({
+        success: false,
+        message: "Blog not found",
+      });
+    }
+
+    blog.title = title ?? blog.title;
+    blog.description = description ?? blog.description;
+    blog.content = content ?? blog.content;
+    blog.isPublished = isPublished ?? blog.isPublished;
+
+    await blog.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Blog updated successfully",
+      blog,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update blog",
+    });
+  }
+};
+
 
 /* =======================
    COMMENTS
