@@ -28,6 +28,7 @@ const App = () => {
         <Route index element={<Dashboard />} />
         <Route path="addBlog" element={<AddBlog />} />
         <Route path="listBlog" element={<ListBlog />} />
+          <Route path="editBlog/:id" element={<EditBlog />} />   {/* ✅ ADD THIS */}
         <Route path="comments" element={<Comments />} />
       </Route>
 
