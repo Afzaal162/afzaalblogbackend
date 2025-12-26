@@ -10,7 +10,7 @@ import Dashboard from "./pages/admin/Dashboard"
 import AddBlog from "./pages/admin/AddBlog"
 import ListBlog from "./pages/admin/ListBlog"
 import { ToastContainer } from "react-toastify";
-import EditBlog from "./pages/admin/EditBlog"
+import EditBlog from "./components/EditBlog";
 
 const App = () => {
   const { token } = useAppContext()
