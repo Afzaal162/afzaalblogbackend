@@ -8,6 +8,8 @@ const BlogtableItem = ({ blog, index }) => {
     <tr className="border-b">
       <td className="px-4 py-3">{index}</td>
       <td className="px-4 py-3">{blog.title}</td>
+      <td className="px-4 py-3">{blog.subTitle || "-"}</td>
+      <td className="px-4 py-3">{blog.category}</td>
       <td className="px-4 py-3">
         {new Date(blog.createdAt).toLocaleDateString()}
       </td>
