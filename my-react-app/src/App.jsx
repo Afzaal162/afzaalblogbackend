@@ -11,6 +11,7 @@ import AddBlog from "./pages/admin/AddBlog"
 import ListBlog from "./pages/admin/ListBlog"
 import Comments from "./pages/admin/Comments"
 import { ToastContainer } from "react-toastify";
+import EditBlog from "./pages/admin/EditBlog"
 
 const App = () => {
   const { token } = useAppContext()
