@@ -7,8 +7,10 @@ const EditBlog = () => {
   const navigate = useNavigate();
 
   const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+  const [subTitle, setSubTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
+  const [imageFile, setImageFile] = useState(null);
 
   // 1️⃣ Fetch blog by ID
   useEffect(() => {
@@ -17,9 +19,11 @@ const EditBlog = () => {
         const res = await axios.get(
           `https://afzaal-blogging-website.vercel.app/api/blog/${id}`
         );
-        setTitle(res.data.title);
-        setContent(res.data.content);
-        setCategory(res.data.category);
+        const blog = res.data.blog;
+        setTitle(blog.title);
+        setSubTitle(blog.subTitle || "");
+        setDescription(blog.description);
+        setCategory(blog.category);
       } catch (error) {
         console.error("Error fetching blog:", error);
       }
@@ -33,10 +37,23 @@ const EditBlog = () => {
     e.preventDefault();
 
     try {
-      await axios.put(
-        `https://afzaal-blogging-website.vercel.app/api/blog/${id}`,
-        { title, content, category }
+      const formData = new FormData();
+      formData.append(
+        "blog",
+        JSON.stringify({ title, subTitle, description, category })
       );
+      if (imageFile) formData.append("image", imageFile);
+
+      await axios.put(
+        `https://afzaal-blogging-website.vercel.app/api/blog/admin/update/${id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
       navigate("/admin");
     } catch (error) {
       console.error("Error updating blog:", error);
@@ -56,6 +73,13 @@ const EditBlog = () => {
         />
 
         <input
+          value={subTitle}
+          onChange={(e) => setSubTitle(e.target.value)}
+          placeholder="Subtitle"
+          className="w-full p-2 border rounded"
+        />
+
+        <input
           value={category}
           onChange={(e) => setCategory(e.target.value)}
           placeholder="Category"
@@ -63,11 +87,17 @@ const EditBlog = () => {
         />
 
         <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
           rows="6"
           placeholder="Content"
           className="w-full p-2 border rounded"
+        />
+
+        <input
+          type="file"
+          onChange={(e) => setImageFile(e.target.files[0])}
+          className="w-full"
         />
 
         <button className="bg-blue-500 text-white px-6 py-2 rounded">
