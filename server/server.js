@@ -1,55 +1,50 @@
-// server.js
 import express from "express";
+import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
-import mongoose from "mongoose";
-
-// Routers
-import blogRouter from "./routes/blogRouter.js";
-import adminRouter from "./routes/adminRouter.js";
-import userRouter from "./routes/userRouter.js";
+import userRoutes from "./routes/userRoutes.js";
+import blogRoutes from "./routes/blogRoutes.js";
 
 dotenv.config();
-
 const app = express();
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log("MongoDB connected"))
-.catch((err) => console.error("MongoDB connection error:", err));
-
+// ======================
 // Middleware
+// ======================
+app.use(cors({ origin: 'https://afzaalblogfrontend.vercel.app', credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// CORS configuration
-app.use(
-  cors({
-    origin: ["https://afzaalblogfrontend.vercel.app"], // your frontend domain
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true, // allows sending auth headers
-  })
-);
-
+// ======================
 // Routes
-app.use("/api/blog", blogRouter);
-app.use("/api/admin", adminRouter);
-app.use("/api/user", userRouter);
+// ======================
+app.use("/api/user", userRoutes);
+app.use("/api/blog", blogRoutes);
 
-// Health check route
-app.get("/", (req, res) => {
-  res.send("API is running...");
+// ======================
+// 404 Handler
+// ======================
+app.use((req, res, next) => {
+  res.status(404).json({ success: false, message: "Route not found" });
 });
 
-// Error handler
+// ======================
+// Global Error Handler
+// ======================
 app.use((err, req, res, next) => {
-  console.error("Server error:", err);
-  res.status(500).json({ success: false, message: "Internal Server Error" });
+  console.error("Global error handler:", err.stack);
+  res.status(500).json({ success: false, message: "Something went wrong", error: err.message });
 });
 
-// Start server
+// ======================
+// Connect to MongoDB
+// ======================
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log("MongoDB connected"))
+  .catch(err => console.error("MongoDB connection error:", err));
+
+// ======================
+// Start Server
+// ======================
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
