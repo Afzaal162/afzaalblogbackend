@@ -3,7 +3,6 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import express from "express";
-import cors from "cors";
 import mongoose from "mongoose";
 import blogRouter from "./routes/blogRouter.js";
 import adminRouter from "./routes/adminRoutes.js";
@@ -18,28 +17,36 @@ console.log("FRONTEND_URL:", process.env.FRONTEND_URL || "❌ missing");
 console.log("MONGO_URI:", process.env.MONGO_URI ? "✅ exists" : "❌ missing");
 
 /* ================================
-   CORS CONFIG (Vercel-friendly)
+   CORS CONFIG (Preflight-friendly)
 ================================ */
 const allowedOrigins = [
   process.env.FRONTEND_URL || "https://afzaalblogfrontend.vercel.app",
   "http://localhost:5175",
 ];
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      console.log("Request origin:", origin); // debug
-      // Allow requests with no origin (Postman, curl, server-to-server)
-      if (!origin) return callback(null, true);
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
 
-      if (allowedOrigins.includes(origin)) return callback(null, true);
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET,POST,PUT,DELETE,OPTIONS"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type,Authorization"
+  );
 
-      console.warn("Blocked by CORS:", origin);
-      return callback(null, false); // just block, do not crash server
-    },
-    credentials: true, // allow cookies / auth headers
-  })
-);
+  // Handle preflight OPTIONS request
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+
+  next();
+});
 
 /* ================================
    MIDDLEWARE
