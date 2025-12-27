@@ -17,7 +17,7 @@ console.log("FRONTEND_URL:", process.env.FRONTEND_URL || "❌ missing");
 console.log("MONGO_URI:", process.env.MONGO_URI ? "✅ exists" : "❌ missing");
 
 /* ================================
-   CORS CONFIG (Preflight-friendly)
+   CORS MIDDLEWARE (Vercel-friendly)
 ================================ */
 const allowedOrigins = [
   process.env.FRONTEND_URL || "https://afzaalblogfrontend.vercel.app",
