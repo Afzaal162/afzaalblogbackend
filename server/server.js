@@ -24,7 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use("/api/user", authRoutes);
-app.use("/api/blog", blogRoutes);
+app.use("/api/blog", blogRouter);
 
 // Connect to MongoDB
 mongoose
