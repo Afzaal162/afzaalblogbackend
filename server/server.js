@@ -18,7 +18,7 @@ console.log("FRONTEND_URL:", process.env.FRONTEND_URL || "❌ missing");
 console.log("MONGO_URI:", process.env.MONGO_URI ? "✅ exists" : "❌ missing");
 
 /* ================================
-   CORS CONFIG
+   CORS CONFIG (Vercel-friendly)
 ================================ */
 const allowedOrigins = [
   process.env.FRONTEND_URL || "https://afzaalblogfrontend.vercel.app",
@@ -27,15 +27,15 @@ const allowedOrigins = [
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin like Postman or server-to-server
+    origin: (origin, callback) => {
+      console.log("Request origin:", origin); // debug
+      // Allow requests with no origin (Postman, curl, server-to-server)
       if (!origin) return callback(null, true);
 
-      if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+
+      console.warn("Blocked by CORS:", origin);
+      callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
   })
