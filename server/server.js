@@ -28,16 +28,16 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      console.log("Request origin:", origin); // debug
       // Allow requests with no origin (Postman, curl, server-to-server)
       if (!origin) return callback(null, true);
 
+      // Allow if origin is in allowed list
       if (allowedOrigins.includes(origin)) return callback(null, true);
 
       console.warn("Blocked by CORS:", origin);
-      callback(new Error("Not allowed by CORS"));
+      return callback(new Error("Not allowed by CORS"));
     },
-    credentials: true,
+    credentials: true, // allow cookies / auth headers
   })
 );
 
@@ -66,7 +66,10 @@ let isConnected = false;
 async function connectDB() {
   if (isConnected) return;
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    await mongoose.connect(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
     console.log("✅ MongoDB connected");
     isConnected = true;
   } catch (err) {
