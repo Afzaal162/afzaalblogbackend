@@ -12,7 +12,7 @@ import {
   getBlogComments,
   getAllComments,
   updateCommentStatus,
-    updateBlogById
+  updateBlogById
 } from "../controllers/blogController.js";
 
 const router = express.Router();
@@ -22,7 +22,7 @@ const router = express.Router();
 ====================== */
 router.get("/admin", auth, getAllBlogsForAdmin);
 router.post("/add", auth, upload.single("image"), addBlog);
-router.put("/admin/update/:id", auth, upload.single("image"), updateBlogById); // ✅ ADD THIS
+router.put("/admin/update/:id", auth, upload.single("image"), updateBlogById);
 router.delete("/admin/:id", auth, deleteBlogById);
 router.post("/admin/toggle-publish", auth, togglePublish);
 
@@ -32,17 +32,14 @@ router.post("/admin/toggle-publish", auth, togglePublish);
 router.get("/admin/comments", auth, getAllComments);
 router.post("/admin/comments/update", auth, updateCommentStatus);
 
-// routes
+// Public comments
 router.post("/:blogId/comment", addComment);
 router.get("/:blogId/comments", getBlogComments);
-
 
 /* ======================
    PUBLIC BLOG ROUTES
 ====================== */
 router.get("/", getAllPublishedBlogs);
-
-// ❗ ALWAYS KEEP THIS LAST
-router.get("/:id", getBlogById);
+router.get("/:id", getBlogById); // must be last
 
 export default router;
