@@ -1,23 +1,17 @@
-// server.js (Vercel-ready)
-import dotenv from "dotenv";
-dotenv.config();
-
+// server.js
 import express from "express";
+import dotenv from "dotenv";
 import mongoose from "mongoose";
 import blogRouter from "./routes/blogRouter.js";
 import adminRouter from "./routes/adminRoutes.js";
 import authRoute from "./routes/authRoute.js";
 
+dotenv.config();
+
 const app = express();
 
 /* ================================
-   ENV CHECK
-================================ */
-console.log("FRONTEND_URL:", process.env.FRONTEND_URL || "❌ missing");
-console.log("MONGO_URI:", process.env.MONGO_URI ? "✅ exists" : "❌ missing");
-
-/* ================================
-   CORS MIDDLEWARE (Vercel-friendly)
+   CORS (Universal)
 ================================ */
 const allowedOrigins = [
   process.env.FRONTEND_URL || "https://afzaalblogfrontend.vercel.app",
@@ -29,47 +23,50 @@ app.use((req, res, next) => {
   if (allowedOrigins.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
   }
-
   res.setHeader("Access-Control-Allow-Credentials", "true");
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET,POST,PUT,DELETE,OPTIONS"
-  );
   res.setHeader(
     "Access-Control-Allow-Headers",
     "Content-Type,Authorization"
   );
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET,POST,PUT,DELETE,OPTIONS"
+  );
 
-  // Handle preflight OPTIONS request
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(204);
-  }
+  if (req.method === "OPTIONS") return res.sendStatus(204);
 
   next();
 });
 
 /* ================================
-   MIDDLEWARE
+   Middleware
 ================================ */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 /* ================================
-   ROUTES
+   Routes
 ================================ */
-app.get("/", (req, res) => {
-  res.send("✅ Backend is working!");
-});
-
 app.use("/api/blog", blogRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/auth", authRoute);
 
+app.get("/", (req, res) => res.send("✅ Backend is working!"));
+
+// Catch-all for errors to ensure CORS headers
+app.use((err, req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.status(err.status || 500).json({ error: err.message });
+});
+
 /* ================================
-   MONGODB CONNECTION
+   MongoDB connection
 ================================ */
 let isConnected = false;
-
 async function connectDB() {
   if (isConnected) return;
   try {
@@ -80,10 +77,9 @@ async function connectDB() {
     console.error("❌ MongoDB error:", err.message);
   }
 }
-
 connectDB();
 
 /* ================================
-   EXPORT APP FOR VERCEL
+   Export App
 ================================ */
 export default app;
