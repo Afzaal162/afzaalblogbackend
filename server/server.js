@@ -7,7 +7,7 @@ import cors from "cors";
 import mongoose from "mongoose";
 import blogRouter from "./routes/blogRouter.js";
 import adminRouter from "./routes/adminRoutes.js";
-import authRoute from "./routes/authRoutes.js";
+import authRoute from "./routes/authRoute.js";
 
 const app = express();
 
