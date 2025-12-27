@@ -21,18 +21,25 @@ console.log("MONGO_URI:", process.env.MONGO_URI ? "✅ exists" : "❌ missing");
    CORS CONFIG
 ================================ */
 const allowedOrigins = [
-  "https://afzaalblogfrontend.vercel.app",
+  process.env.FRONTEND_URL || "https://afzaalblogfrontend.vercel.app",
   "http://localhost:5175",
 ];
 
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // Postman / server calls
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(null, false);
-  },
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin like Postman or server-to-server
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 
 /* ================================
    MIDDLEWARE
@@ -57,7 +64,7 @@ app.use("/api/auth", authRoute);
 let isConnected = false;
 
 async function connectDB() {
-  if (isConnected) return; // Use cached connection
+  if (isConnected) return;
   try {
     await mongoose.connect(process.env.MONGO_URI);
     console.log("✅ MongoDB connected");
