@@ -1,30 +1,24 @@
 import jwt from "jsonwebtoken";
 
 const auth = (req, res, next) => {
-  // Allow preflight requests to pass
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
-  }
+  // Allow preflight requests
+  if (req.method === "OPTIONS") return res.sendStatus(200);
 
   try {
     const authHeader = req.headers.authorization;
 
-    if (!authHeader) {
+    if (!authHeader)
       return res.status(401).json({ success: false, message: "No token provided" });
-    }
 
     const token = authHeader.startsWith("Bearer ")
       ? authHeader.split(" ")[1]
       : authHeader;
 
-    if (!token) {
+    if (!token)
       return res.status(401).json({ success: false, message: "Invalid token format" });
-    }
 
-    if (!process.env.JWT_SECRET) {
-      console.error("JWT_SECRET missing");
+    if (!process.env.JWT_SECRET)
       return res.status(500).json({ success: false, message: "Server misconfiguration" });
-    }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
