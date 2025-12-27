@@ -1,75 +1,55 @@
 // server.js
-import dotenv from "dotenv";
-dotenv.config();
-
 import express from "express";
 import cors from "cors";
+import dotenv from "dotenv";
 import mongoose from "mongoose";
+
+// Routers
 import blogRouter from "./routes/blogRouter.js";
 import adminRouter from "./routes/adminRouter.js";
-import authRoute from "./routes/authRoute.js";
+import userRouter from "./routes/userRouter.js";
+
+dotenv.config();
 
 const app = express();
 
-/* =======================
-   ENV CHECK
-======================= */
-console.log("FRONTEND_URL:", process.env.FRONTEND_URL || "❌ missing");
-console.log("MONGO_URI:", process.env.MONGO_URI ? "✅ exists" : "❌ missing");
+// Connect to MongoDB
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log("MongoDB connected"))
+.catch((err) => console.error("MongoDB connection error:", err));
 
-/* =======================
-   CORS CONFIG
-======================= */
-const allowedOrigins = [
-  process.env.FRONTEND_URL || "https://afzaalblogfrontend.vercel.app",
-  "http://localhost:5175",
-];
-
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true); // allow Postman/server requests
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-      callback(new Error("Not allowed by CORS"));
-    },
-    credentials: true,
-  })
-);
-
-/* =======================
-   MIDDLEWARE
-======================= */
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-/* =======================
-   ROUTES
-======================= */
-app.get("/", (req, res) => res.send("✅ Backend is working!"));
+// CORS configuration
+app.use(
+  cors({
+    origin: ["https://afzaalblogfrontend.vercel.app"], // your frontend domain
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: true, // allows sending auth headers
+  })
+);
 
+// Routes
 app.use("/api/blog", blogRouter);
 app.use("/api/admin", adminRouter);
-app.use("/api/auth", authRoute);
+app.use("/api/user", userRouter);
 
-/* =======================
-   MONGODB CONNECTION
-======================= */
-let isConnected = false;
+// Health check route
+app.get("/", (req, res) => {
+  res.send("API is running...");
+});
 
-async function connectDB() {
-  if (isConnected) return;
-  try {
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log("✅ MongoDB connected");
-    isConnected = true;
-  } catch (err) {
-    console.error("❌ MongoDB error:", err.message);
-  }
-}
+// Error handler
+app.use((err, req, res, next) => {
+  console.error("Server error:", err);
+  res.status(500).json({ success: false, message: "Internal Server Error" });
+});
 
-connectDB();
-
-/* =======================
-   EXPORT APP FOR VERCEL
-======================= */
-export default app;
+// Start server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
