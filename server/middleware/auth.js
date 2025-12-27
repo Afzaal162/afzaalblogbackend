@@ -1,6 +1,11 @@
 import jwt from "jsonwebtoken";
 
 const auth = (req, res, next) => {
+  // Allow preflight requests to pass
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+
   try {
     const authHeader = req.headers.authorization;
 
